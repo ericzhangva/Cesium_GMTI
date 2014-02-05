@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8">
+
+    <!-- Use Chrome Frame in IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+
+    <!-- Make the application take up the full browser screen and disable user scaling-->
+    <meta name="viewport"
+          content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+
+    <title>GMTI Viewer</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="CesiumViewer.css" media="screen">
+
+    <script data-main="CesiumViewerStartup" src="../../ThirdParty/requirejs-2.1.9/require.js"></script>
+
+    <script type="text/javascript" src='../../js/jquery-1.8.3.min.js'></script>
+    <script src='../../js/GMTI/gmti.js'></script>
+    <script src='../../js/GMTI/utils.js'></script>
+    <script src='../Emulator/gmti.js'></script>
+
+
+</head>
+<body style="background: #404040;">
+
+    <script type="text/javascript">
+
+        //********** variables *****************
+        var gmtis = [];
+        var entities = [];              //All entities in the map
+        var targets = [];               //entities in Gmti sensing windows
+        var utils = new Utils();
+
+        var gmti;
+
+        function log(s) {
+            console.log(s);
+        }
+
+        function settings(params) {
+
+            target_lat = params['lat'];
+            target_lng = params['lng'];
+            target_alt = params['alt'];
+            heading = params['heading'];
+            speed = params['speed'];
+            radius = params['radius'];
+
+            require(['../Apps/Emulator/gmti', '../Build/Cesium/Cesium'], function(){
+                var emulator = new Emulator(cesiumViewer);
+            });
+        }
+
+        function reloadMap(){
+          location.reload(false)
+        }
+
+
+        //******************* Web Socket
+
+        (function connect() {
+            try {
+                var host = "ws://localhost:8082";
+                socket = new WebSocket(host);
+
+                socket.onopen = function () {
+                    log('Socket Status: ' + socket.readyState + ' (open)');
+                }
+
+                socket.onmessage = function (msg) {      // Primary point server update the map
+
+                    //update the gmti data and redraw it on map
+                    var str = msg.data;
+ //                   log('Received: ' + str);
+                    var json = $.parseJSON(str);
+                    var id = json["id"];
+                    var type = json['type'];
+                    if (type == "GMTI") {
+                        var gmti = null;
+                        for (var i = 0; i < gmtis.length; i++) {
+                            var g = gmtis[i];
+                            if (g.id == id) {
+                                gmti = g;
+                            }
+                        }
+
+                        if (gmti == null) {       // no instance in the arry yes. So create a new one
+                            gmti = new Gmti();
+
+                            gmtis.push(gmti);
+                            gmti.id = id;
+                            log("New Gmti instance is created with id = " + id);
+
+
+                        }
+
+                        utils.loadFromObject(gmti, JSON.parse(str));
+//                        gmti.drawWindow(map);
+
+                        //update gmti on Cesium
+                       updateEntity(gmti);
+
+                        //add a new attribute to record server update. Used for determine if no more server update received
+                        gmti.serverUpdate = new Date().getTime();
+                    }
+
+
+                    if (type == "CAR") {
+
+                        var entity = null;
+                        for (var i = 0; i < entities.length; i++) {
+                            var e = entities[i];
+                            if (e.id == id && e.type == type) {
+                                entity = e;
+                            }
+                        }
+
+                        if (entity == null) {       // no instance in the arry yes. So create a new one
+                            entity = new Entity();
+                            entity.id = id;
+                            entity.type = type;
+                            entities.push(entity);
+
+                            log("New Entity instance is created with id = " + id + " and type = " + type);
+                        }
+
+                        utils.loadFromObject(entity, JSON.parse(str));
+//                        entity.drawMarker(map);
+
+                        updateEntity(entity);
+
+                        //add a new attribute to record server update. Used for determine if no more server update received
+                        entity.serverUpdate = new Date().getTime();
+                    }
+
+                }
+
+                socket.onclose = function () {
+                    log('Socket Status: ' + socket.readyState + ' (Closed)');
+
+                    //delay little and try to connect again
+                    setTimeout(function () {
+                        connect()
+                    }, 5000);
+                }
+
+            } catch (exception) {
+                log('Error : ' + exception);
+            }
+        }())
+
+
+        //If a gmti did not get updated for period of time remove it
+        var expiredPeriod = 10000;
+        setInterval(function () {
+            var now = new Date().getTime();
+
+            //---- Remove expired GMTIs -----
+            var removedEntities = []
+            gmtis.forEach(function (gmti) {
+                if (now - gmti.serverUpdate > expiredPeriod) {
+                    removedEntities.push(gmti)
+                }
+            })
+            for (var i = 0; i < removedEntities.length; i++) {
+                var gmti = removedEntities[i];
+ //               gmti.clearMapWindow();
+                var ind = gmtis.indexOf(gmti);
+                log("Removed GMTI : " + gmti.id)
+                removeEntity(gmti);
+                gmtis.splice(ind, 1);
+            }
+
+            //---- Remove expired Entities  -----
+            removedEntities = []
+            entities.forEach(function (e) {
+                if (now - e.serverUpdate > expiredPeriod) {
+                    removedEntities.push(e)
+                }
+            })
+            for (var i = 0; i < removedEntities.length; i++) {
+                var e = removedEntities[i];
+  //              e.clearMarker();
+                var ind = entities.indexOf(e);
+                log("Removed GMTI : " + e.id)
+                removeEntity(e);
+                entities.splice(ind, 1);
+            }
+
+        }, 2000);
+
+
+    </script>
+
+<div id="cesiumContainer" class="fullWindow"></div>
+<div id="loadingIndicator" class="loadingIndicator"></div>
+
+</body>
+</html>

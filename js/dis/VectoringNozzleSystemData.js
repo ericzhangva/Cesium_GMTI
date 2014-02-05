@@ -1,0 +1,33 @@
+/**
+ * Data about a vectoring nozzle system
+ *
+ * Copyright (c) 2008-2013, MOVES Institute, Naval Postgraduate School. All rights reserved.
+ * This work is licensed under the BSD open source license, available at https://www.movesinstitute.org/licenses/bsd.html
+ *
+ * @author DMcG
+ */
+if (typeof dis === "undefined")
+ dis = {};
+
+ dis.VectoringNozzleSystemData = function()
+{
+   /** horizontal deflection angle */
+   this.horizontalDeflectionAngle = 0;
+
+   /** vertical deflection angle */
+   this.verticalDeflectionAngle = 0;
+
+  this.initFromBinaryDIS = function(inputStream)
+  {
+
+       this.horizontalDeflectionAngle = inputStream.readFloat32();
+       this.verticalDeflectionAngle = inputStream.readFloat32();
+  }
+
+  this.encodeToBinaryDIS = function(outputStream)
+  {
+
+       outputStream.writeFloat32(this.horizontalDeflectionAngle);
+       outputStream.writeFloat32(this.verticalDeflectionAngle);
+};
+}; // end of class

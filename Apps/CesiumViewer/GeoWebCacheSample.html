@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Hello World!</title>
+    <script src="../../Build/Cesium/Cesium.js"></script>
+    <style>
+        @import url(../../Build/Cesium/Widgets/CesiumWidget/CesiumWidget.css);
+
+        #cesiumContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            overflow: hidden;
+            padding: 0;
+            font-family: sans-serif;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #status {
+
+            bottom:0;
+            left:50%;
+            margin:0;
+            padding:0;
+            position:fixed;
+            width:50%;
+        }
+
+        #status div {
+            margin:0;
+            padding:3px;
+            text-align:right;
+            color:#F8F8FF;
+            font-weight:bold;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id="status"><div id="innerstatus"></div></div>
+<script>
+    var widget = new Cesium.CesiumWidget('cesiumContainer', {
+        imageryProvider : new Cesium.TileMapServiceImageryProvider({
+            url : 'http://00hrnap32.dev.lab/geowebcache/service/tms/1.0.0/NationalMap_0@EPSG%3A4326@png',
+            tilingScheme : new Cesium.GeographicTilingScheme()
+        })
+    });
+
+    var layers = widget.centralBody.getImageryLayers();
+
+    var osm = layers.addImageryProvider(new Cesium.TileMapServiceImageryProvider({
+        url : 'http://00hrnap32.dev.lab/geowebcache/service/tms/1.0.0/OSM_BASEMAP_OVERLAY_ZOOM_IN@EPSG%3A4326@png',
+        tilingScheme : new Cesium.GeographicTilingScheme()
+    }));
+
+//    var coordinates = layers.addImageryProvider(new Cesium.TileCoordinatesImageryProvider());
+//    function pickCartographicPosition(scene, ellipsoid) {
+//        var toolbar = document.getElementById('innerstatus');
+//
+//        // Mouse over the globe to see the cartographic position
+//        handler = new Cesium.ScreenSpaceEventHandler(scene.getCanvas());
+//        handler.setInputAction(function(movement) {
+//            var cartesian = scene.getCamera().controller.pickEllipsoid(movement.endPosition, ellipsoid);
+//            if (cartesian) {
+//                var cartographic = ellipsoid.cartesianToCartographic(cartesian);
+//                toolbar.innerHTML = 'Longitude: ' + Cesium.Math.toDegrees(cartographic.longitude).toFixed(2) + '  Latitude: ' + Cesium.Math.toDegrees(cartographic.latitude).toFixed(2) + '';
+//            } else {
+//                toolbar.innerHTML = '';
+//            }
+//        }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+//    }
+//    pickCartographicPosition(widget.scene, widget.centralBody.getEllipsoid());
+
+
+
+//        var blackMarble = layers.addImageryProvider(new Cesium.WebMapServiceImageryProvider({
+//                        url : 'http://10.12.131.22:8080/geowebcache/service/wms?',
+//                        layers : 'NationalMap_0',
+//                        credit : 'Rodney',
+//                        parameters : {
+//                            transparent : 'true',
+//                            format : 'image/png'
+//                        }
+//                    }));
+//        blackMarble.alpha = 0.5;
+//        blackMarble.brightness = 2.0;
+</script>
+</body>
+</html>

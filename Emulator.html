@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Hello World!</title>
+    <script src="Cesium/Cesium.js"></script>
+    <script src="js/require.js"></script>
+
+    <style>
+        @import url(Cesium/Widgets/CesiumWidget/CesiumWidget.css);
+
+        #cesiumContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            overflow: hidden;
+            padding: 0;
+            font-family: sans-serif;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+
+<script>
+
+    Cesium.BingMapsApi.defaultKey = "AqiMsioNnYbehu-KvOCkURZjKUCy4Kpp2WNdSe9HvhOiu_qGaya1jM74gC3uUEbx";
+
+    function log(s) {
+        console.log(s);
+    }
+
+    var widget = new Cesium.Viewer('cesiumContainer', {
+        // imageryProvider : new Cesium.OpenStreetMapImageryProvider(),
+        terrainProvider: new Cesium.CesiumTerrainProvider({
+            url: 'http://cesiumjs.org/smallterrain',
+            credit: 'Terrain data courtesy Analytical Graphics, Inc.'
+        }),
+        // Use high-res stars downloaded from https://github.com/AnalyticalGraphicsInc/cesium-assets
+        skyBox: new Cesium.SkyBox({
+            sources: {
+                positiveX: 'stars/TychoSkymapII.t3_08192x04096/TychoSkymapII.t3_08192x04096_80_px.jpg',
+                negativeX: 'stars/TychoSkymapII.t3_08192x04096/TychoSkymapII.t3_08192x04096_80_mx.jpg',
+                positiveY: 'stars/TychoSkymapII.t3_08192x04096/TychoSkymapII.t3_08192x04096_80_py.jpg',
+                negativeY: 'stars/TychoSkymapII.t3_08192x04096/TychoSkymapII.t3_08192x04096_80_my.jpg',
+                positiveZ: 'stars/TychoSkymapII.t3_08192x04096/TychoSkymapII.t3_08192x04096_80_pz.jpg',
+                negativeZ: 'stars/TychoSkymapII.t3_08192x04096/TychoSkymapII.t3_08192x04096_80_mz.jpg'
+            }
+        })
+    });
+
+
+    var west = Cesium.Math.toRadians(-77.510262);
+    var south = Cesium.Math.toRadians(38.891693);
+    var east = Cesium.Math.toRadians(-77.307227);
+    var north = Cesium.Math.toRadians(39.085962);
+
+    var extent = new Cesium.Extent(west, south, east, north);
+    widget.scene.getCamera().controller.viewExtent(extent);
+
+    var camera = widget.scene.getCamera();
+    var scene = widget.scene;
+
+    var primitives = scene.getPrimitives();
+
+
+
+</script>
+</body>
+</html>

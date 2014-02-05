@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GMTI Viewer Settings</title>
+
+    <!--  <script src="http://yui.yahooapis.com/3.14.1/build/yui/yui-min.js"></script> -->
+    <script type="text/javascript"
+            src="http://yui.yahooapis.com/3.12.0/build/simpleyui/simpleyui-min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <link rel="stylesheet" href="../../css/foundation.css"/>
+    <script src="../../js/modernizr.js"></script>
+    <link type="text/css" href="../../css/XMLDisplay.css" rel="stylesheet">
+    <script type="text/javascript" src="../../js/XMLDisplay.js"></script>
+
+
+    <script type="text/javascript">
+
+    var imageryProvider = null;
+
+        function log(s) {
+            console.log(s);
+        }
+        function updatesettings() {
+            var lat = $("#lat").val();
+            var lng = $("#lng").val();
+            var alt = $("#alt").val();
+            var heading = $("#heading").val();
+            var speed = $("#speed").val();
+            var radius = $("#radius").val();
+
+            //pass this to Cesium map frame
+            var params = {"lat": lat, "lng": lng, "alt": alt, "heading": heading, "speed": speed, "radius": radius};
+
+            window.parent.frames['GMTI_Viewer'].settings(params)
+        }
+
+        function changeSettings(sel) {
+            var optionSelected = $(sel).find("option:selected");
+            if (optionSelected.val() != "user") {
+                var params = $.parseJSON(optionSelected.val());
+
+                $("#lat").val(params['lat']);
+                $("#lng").val(params['lng']);
+                $("#alt").val(params['alt']);
+                $("#heading").val(params['heading']);
+                $("#speed").val(params['speed']);
+                $("#radius").val(params['radius']);
+                $("input").prop('disabled', true);
+                updatesettings()
+            } else {
+                $("input").prop('disabled', false);
+            }
+        }
+
+        function changeImageryProvider(sel){
+            var optionSelected = $(sel).find("option:selected");
+            if (optionSelected.val() == "default") {
+                imageryProvider = null;
+            }else{
+                imageryProvider = optionSelected.val();
+            }
+            // force to refresh map
+            window.parent.frames['GMTI_Viewer'].reloadMap();
+            //set PredefinedSettings back to default
+            $("#PredefinedSettings").val('1');
+            changeSettings($("#PredefinedSettings"));
+        }
+
+        function getImageryProvider(){
+            return imageryProvider;
+        }
+
+    </script>
+
+</head>
+<body style="background: #408040;">
+
+<div class="row">
+    <div class="large-12 columns">
+        <h6><span style="color: #ffffff" data-tooltip class="has-tip"
+                  title="An imagery provider provides a tiled images at runtime.">Imagery Provider</span>
+        </h6>
+        <select id="imageryProvider" onchange="changeImageryProvider(this)">
+            <option value='default'>
+                Default (Bing)
+            </option>
+            <option value='http://00hrnap32.dev.lab/geowebcache/service/tms/1.0.0/NationalMap_0@EPSG%3A4326@png'>
+                MACE Local
+            </option>
+        </select>
+    </div>
+</div>
+
+<div class="row">
+    <hr>
+</div>
+
+
+<div class="row">
+    <div class="large-12 columns">
+        <h6><span style="color: #ffffff" data-tooltip class="has-tip"
+                  title="Select User Defined to enter your own settings.">Predefined Settings:</span>
+        </h6>
+        <select id="PredefinedSettings" onchange="changeSettings(this)">
+            <option value='{"lat":"38.947787","lng":"-77.427864","alt":"1500","heading":"0","speed":"200","radius":"10000"}'>
+                Dulles International Airport
+            </option>
+            <option value='{"lat":"38.822424","lng":"-78.296127","alt":"1050","heading":"0","speed":"200","radius":"5000"}'>
+                Shenandoah National Park
+            </option>
+            <option value='{"lat":"46.802222","lng":"-121.816667","alt":"3000","heading":"0","speed":"600","radius":"15000"}'>
+                Mt. Rainier, WA
+            </option>
+            <option value='{"lat":"37.819878","lng":"-122.478503","alt":"500","heading":"-90","speed":"200","radius":"15000"}'>
+                Golden Gate Bridge, CA
+            <option value='{"lat":"37.774929","lng":"-122.419416","alt":"300","heading":"-45","speed":"200","radius":"10000"}'>
+                Bay Area, San Francisco, CA
+            </option>
+            <option value='user'>User Defined</option>
+        </select>
+    </div>
+</div>
+
+
+</div>
+
+
+<div class="row">
+    <div class="large-12 columns"><h6><span style="color: #ffffff" data-tooltip class="has-tip"
+                                            title="A geo-point on the groud that camera will look at in a down 15 degree angle.">Inital Ground Target Position</span>
+    </h6></div>
+</div>
+<div class="row">
+    <div class="large-12 columns"> &nbsp;</div>
+</div>
+
+<div class="row">
+    <div class="large-2 columns"><b>Latitude (degree):</b></div>
+    <div class="large-10 columns"><input type="text" id="lat" value="38.947787"/></div>
+</div>
+
+<div class="row">
+    <div class="large-2 columns"><b>Longitude (degree):</b></div>
+    <div class="large-10 columns"><input type="text" id="lng" value="-77.427864"/></div>
+</div>
+
+
+<div class="row">
+    <div class="large-12 columns"><h6><span style="color: #ffffff" data-tooltip class="has-tip"
+                                            title="Pparameters to control the initial camera angles and how the camera flies ">Camera Settings</span>
+    </h6></div>
+</div>
+<div class="row">
+    <div class="large-12 columns"> &nbsp;</div>
+</div>
+
+<div class="row">
+    <div class="large-2 columns"><b>Camera Altitude (m):</b></div>
+    <div class="large-10 columns"><input type="text" id="alt" value="1500"/></div>
+</div>
+
+<div class="row">
+    <div class="large-2 columns"><b>Initial Heading (degree to north)</b></div>
+    <div class="large-10 columns"><input type="text" id="heading" value="0"/></div>
+</div>
+
+<div class="row">
+    <div class="large-2 columns"><b>Fly Speed (km/h):</b></div>
+    <div class="large-10 columns"><input type="text" id="speed" value="200"/></div>
+</div>
+
+<div class="row">
+    <div class="large-2 columns"><b>Flying Circle Radius (m):</b></div>
+    <div class="large-10 columns"><input type="text" id="radius" value="10000"/></div>
+</div>
+
+<!--
+<div class="row">
+    <div class="large-2 columns"><b>Lookdown angle (degree):</b></div>
+    <div class="large-10 columns"><input type="text" id="angle" value="15"/></div>
+</div>
+-->
+<div class="row">
+    <hr>
+</div>
+
+<div class="row">
+    <div onclick="updatesettings()" class="large-12 columns"><a class="round button" href="#" id="endpoint">Set</a><!--<input type="button" id="endpoint" value=" Set "/>-->
+    </div>
+</div>
+
+
+<!-- ************************************** -->
+
+<script>
+    $(document).ready(function () {
+        $("input").prop('disabled', true);
+    })
+</script>
+
+</body>
+
+</html>
